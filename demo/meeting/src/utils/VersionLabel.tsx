@@ -1,11 +1,13 @@
-// Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// Copyright 2020-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import React from 'react';
 import { Versioning } from 'amazon-chime-sdk-component-library-react';
+import { Versioning as SDKVersioning } from 'amazon-chime-sdk-js';
 
 export const VersionLabel = () => {
   const versionTag = `${Versioning.sdkName}@${Versioning.sdkVersion}`;
+  const sdkVersionTag = `${SDKVersioning.sdkName}@${SDKVersioning.sdkVersion}`;
 
   return (
     <span
@@ -17,7 +19,7 @@ export const VersionLabel = () => {
         fontSize: '0.70rem'
       }}
     >
-      {versionTag}
+      {versionTag} | {sdkVersionTag}
     </span>
   );
 };

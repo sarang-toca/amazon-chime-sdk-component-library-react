@@ -1,4 +1,4 @@
-// Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// Copyright 2020-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import {
@@ -155,7 +155,7 @@ export class MeetingManager implements AudioVideoObserver {
       try {
         await this.audioVideo.chooseVideoInputDevice(null);
         await this.audioVideo.chooseAudioInputDevice(null);
-        await this.audioVideo.chooseAudioOutputDevice(null);
+        await this.audioVideo?.chooseAudioOutputDevice(null);
       } catch (e) {
         console.log('Unable to set device to null on leave.');
       }
@@ -302,9 +302,13 @@ export class MeetingManager implements AudioVideoObserver {
       this.audioInputDevices.length
     ) {
       this.selectedAudioInputDevice = this.audioInputDevices[0].deviceId;
-      await this.audioVideo?.chooseAudioInputDevice(
-        this.audioInputDevices[0].deviceId
-      );
+      try {
+        await this.audioVideo?.chooseAudioInputDevice(
+          this.audioInputDevices[0].deviceId
+        );
+      } catch (e) {
+        console.error('Failed to choose audio output device.', e);
+      }
       this.publishSelectedAudioInputDevice();
     }
     if (
@@ -313,9 +317,15 @@ export class MeetingManager implements AudioVideoObserver {
       this.audioOutputDevices.length
     ) {
       this.selectedAudioOutputDevice = this.audioOutputDevices[0].deviceId;
-      await this.audioVideo?.chooseAudioOutputDevice(
-        this.audioOutputDevices[0].deviceId
-      );
+      if (this.supportsSetSinkId()) {
+        try {
+          await this.audioVideo?.chooseAudioOutputDevice(
+            this.audioOutputDevices[0].deviceId
+          );
+        } catch (e) {
+          console.error('Failed to choose audio output device.', e);
+        }
+      }
       this.publishSelectedAudioOutputDevice();
     }
     if (
@@ -332,10 +342,18 @@ export class MeetingManager implements AudioVideoObserver {
     try {
       const receivedDevice = audioInputSelectionToDevice(deviceId);
       if (receivedDevice === null) {
-        await this.audioVideo?.chooseAudioInputDevice(null);
+        try {
+          await this.audioVideo?.chooseAudioInputDevice(null);
+        } catch (e) {
+          console.error('Failed to choose audio output device.', e);
+        }
         this.selectedAudioInputDevice = null;
       } else {
-        await this.audioVideo?.chooseAudioInputDevice(receivedDevice);
+        try {
+          await this.audioVideo?.chooseAudioInputDevice(receivedDevice);
+        } catch (e) {
+          console.error('Failed to choose audio output device.', e);
+        }
         this.selectedAudioInputDevice = deviceId;
       }
       this.publishSelectedAudioInputDevice();
@@ -345,6 +363,7 @@ export class MeetingManager implements AudioVideoObserver {
   };
 
   selectAudioOutputDevice = async (deviceId: string): Promise<void> => {
+
     try {
       await this.audioVideo?.chooseAudioOutputDevice(deviceId);
       this.selectedAudioOutputDevice = deviceId;
@@ -525,6 +544,10 @@ export class MeetingManager implements AudioVideoObserver {
       callback(this.meetingStatus);
     });
   };
+
+  private supportsSetSinkId = (): boolean => {
+    return 'setSinkId' in HTMLAudioElement.prototype;
+  }
 }
 
 export default MeetingManager;

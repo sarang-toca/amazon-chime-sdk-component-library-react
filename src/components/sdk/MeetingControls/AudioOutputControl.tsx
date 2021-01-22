@@ -1,4 +1,4 @@
-// Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// Copyright 2020-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import React from 'react';
@@ -8,7 +8,7 @@ import { Sound } from '../../ui/icons';
 import { useMeetingManager } from '../../../providers/MeetingProvider';
 import { useAudioOutputs } from '../../../providers/DevicesProvider';
 import { useLocalAudioOutput } from '../../../providers/LocalAudioOutputProvider';
-import { isOptionActive } from '../../../utils/device-utils';
+import { isOptionActive, supportsSetSinkId } from '../../../utils/device-utils';
 import { DeviceType } from '../../../types';
 import { PopOverItemProps } from '../../ui/PopOver/PopOverItem';
 
@@ -21,13 +21,17 @@ const AudioOutputControl: React.FC<Props> = ({ label = 'Speaker' }) => {
   const meetingManager = useMeetingManager();
   const { devices, selectedDevice } = useAudioOutputs();
   const { isAudioOn, toggleAudio } = useLocalAudioOutput();
+  const audioOutputOnClick = async (deviceId: string): Promise<void> => {
+    if (supportsSetSinkId()) {
+      await meetingManager.selectAudioOutputDevice(deviceId);
+    }
+  }
 
   const dropdownOptions: PopOverItemProps[] = devices.map(
     (device: DeviceType) => ({
       children: <span>{device.label}</span>,
       checked: isOptionActive(selectedDevice, device.deviceId),
-      onClick: (): Promise<void> =>
-        meetingManager.selectAudioOutputDevice(device.deviceId)
+      onClick: (): Promise<void> => audioOutputOnClick(device.deviceId),
     })
   );
 

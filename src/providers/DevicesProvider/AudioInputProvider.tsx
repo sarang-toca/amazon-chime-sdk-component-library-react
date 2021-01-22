@@ -1,4 +1,4 @@
-// Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// Copyright 2020-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import React, {
@@ -62,7 +62,11 @@ const AudioInputProvider: React.FC = ({ children }) => {
           selectedInputRef.current === "default"
         ) {
           console.log(`Audio devices updated and "default" device is selected. Reselecting input.`);
-          await audioVideo?.chooseAudioInputDevice(selectedInputRef.current);
+          try {
+            await audioVideo?.chooseAudioInputDevice(selectedInputRef.current);
+          } catch (e) {
+            console.error(`Error in selecting audio input device - ${e}`);
+          }
         }
 
         setAudioInputs(newAudioInputs);

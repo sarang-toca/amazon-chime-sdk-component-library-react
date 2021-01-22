@@ -1,10 +1,11 @@
-// Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// Copyright 2020-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
 import React from 'react';
 
 import { useMeetingManager } from '../../../../providers/MeetingProvider';
 import { useAudioOutputs } from '../../../../providers/DevicesProvider';
+import { supportsSetSinkId } from '../../../../utils/device-utils';
 import DeviceInput from '../DeviceInput';
 
 interface Props {
@@ -25,7 +26,9 @@ export const SpeakerSelection: React.FC<Props> = ({
   const { devices, selectedDevice } = useAudioOutputs();
 
   async function selectAudioOutput(deviceId: string) {
-    meetingManager.selectAudioOutputDevice(deviceId);
+    if (supportsSetSinkId()) {
+      meetingManager.selectAudioOutputDevice(deviceId);
+    }
     onChange && onChange(deviceId);
   }
 
